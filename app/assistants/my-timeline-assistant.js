@@ -222,7 +222,7 @@ MyTimelineAssistant.prototype.initTimeline = function() {
 	sch.debug('initializing Timeline in assistant');
   // TODO: Timeline list widget
 	this.timelineModel = {items: []};
-  this.controller.setupWidget("my-timeline", {itemTemplate: "shared/tweet"}, this.timelineModel);
+  this.controller.setupWidget("my-timeline", {itemTemplate: "shared/tweet", hasNoWidgets: true, lookahead: 20, renderLimit: 20}, this.timelineModel);
 	
 	var thisA = this;
 	/*

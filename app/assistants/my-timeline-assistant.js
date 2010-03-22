@@ -288,7 +288,7 @@ MyTimelineAssistant.prototype.initTimeline = function() {
           return tweet;
         }).
         sort(function(a, b) {
-          return a.SC_created_at_unixtime > b.SC_created_at_unixtime;
+          return b.SC_created_at_unixtime - a.SC_created_at_unixtime;
         });
         thisA.controller.modelChanged(thisA.timelineModel);
       });

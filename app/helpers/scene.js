@@ -977,6 +977,7 @@ scene_helpers.addCommonSceneMethods = function(assistant) {
 				Set this so we don't fire a tap after firing the hold
 			*/
 			e.target.holdFired = true;
+			Event.stop(e);
 			
 			
 			
@@ -1187,7 +1188,8 @@ scene_helpers.addCommonSceneMethods = function(assistant) {
 	
   // TODO Mojo Widget-centric code for timeline
   assistant.handleTimelineTap = function(e) {
-		Mojo.Controller.stageController.pushScene('message-detail', {'status_id':e.item.id, 'isdm':false, 'status_obj':e.item});
+    if(!e.holdFired)
+		  Mojo.Controller.stageController.pushScene('message-detail', {'status_id':e.item.id, 'isdm':false, 'status_obj':e.item});
 	};
 };
 

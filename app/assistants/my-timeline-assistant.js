@@ -271,9 +271,25 @@ MyTimelineAssistant.prototype.initTimeline = function() {
       // thisA.mytl.addItems(no_dupes);
 
       // TODO: Timeline list widget
+      // remove invalid data, massage into format that works for view interpolation, sort
       sc.app.Tweets.bucket.all(function(tweets) {
-        thisA.timelineModel.items = tweets;
-        sc.info("Finished loading tweets. There are now " + tweets.length);
+        thisA.timelineModel.items = tweets.select(function(tweet) {
+          if(tweet.id)
+            return true;
+          else
+            return false;
+        }).
+        map(function(tweet){
+          tweet.status = null;
+          tweet.status = tweet.not_new ? "" : "new";
+          tweet.status += tweet.SC_is_reply ? " reply" : "";
+          tweet.protected_icon = tweet.user["protected"] ? "protected-icon" : "";
+          tweet.relative_time = sch.getRelativeTime(tweet.created_at);
+          return tweet;
+        }).
+        sort(function(a, b) {
+          return a.SC_created_at_unixtime > b.SC_created_at_unixtime;
+        });
         thisA.controller.modelChanged(thisA.timelineModel);
       });
 			

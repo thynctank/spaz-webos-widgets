@@ -155,6 +155,7 @@ MyTimelineAssistant.prototype.activate = function(params) {
 		Prepare for timeline entry taps
 	*/
 	this.bindTimelineEntryTaps('#my-timeline');
+	this.controller.listen("my-timeline", Mojo.Event.listTap, this.handleTimelineTap);
 
 	/*
 		start the mytimeline 

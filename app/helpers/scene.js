@@ -1033,71 +1033,8 @@ scene_helpers.addCommonSceneMethods = function(assistant) {
 			});
 			
 		});
-		
-		jQuery(tl_selector+' div.timeline-entry', this.scroller).live(Mojo.Event.tap, function(e) {
-			
-			/*
-				Check to see if a hold already fired. If so, don't do *anything*
-			*/
-			if (e.target.holdFired) {
-				e.target.holdFired = false;
-				return;
-			}
-			
-			var jqtarget = jQuery(e.target);
-
-			e.stopImmediatePropagation();
-
-			if (jqtarget.is('div.timeline-entry>.user') || jqtarget.is('div.timeline-entry>.user img')) {
-				var userid = jQuery(this).attr('data-user-id');
-				Mojo.Controller.stageController.pushScene('user-detail', userid);
-				return;
-
-			} else if (jqtarget.is('.username.clickable')) {
-				var userid = jqtarget.attr('data-user-screen_name');
-				Mojo.Controller.stageController.pushScene('user-detail', '@'+userid);
-				return;
-
-			} else if (jqtarget.is('.hashtag.clickable')) {
-				var hashtag = jqtarget.attr('data-hashtag');
-				thisA.searchFor('#'+hashtag);
-				return;
-
-			} else if (jqtarget.is('div.timeline-entry .meta')) {
-				var status_id = jqtarget.attr('data-status-id');
-				var isdm = false;
-				var status_obj = null;
-
-				status_obj = thisA.getTweetFromModel(parseInt(status_id, 10));
-
-				if (jqtarget.parent().parent().hasClass('dm')) {
-					isdm = true;
-				}
-
-				Mojo.Controller.stageController.pushScene('message-detail', {'status_id':status_id, 'isdm':isdm, 'status_obj':status_obj});
-				return;
-
-			} else if (jqtarget.is('div.timeline-entry a[href]')) {
-				return;
-
-			} else {
-				var status_id = jQuery(this).attr('data-status-id');
-				var isdm = false;
-				var status_obj = null;
-
-				if (jQuery(this).hasClass('dm')) {
-					isdm = true;
-				}
-
-				Mojo.Controller.stageController.pushScene('message-detail', {'status_id':status_id, 'isdm':isdm, 'status_obj':status_obj});
-				return;
-			}
-		});
 	};
 	
-	
-	
-
 	
 	
 	/**
@@ -1248,7 +1185,10 @@ scene_helpers.addCommonSceneMethods = function(assistant) {
 		Spaz.closeDashboard();
 	};
 	
-	
+  // TODO Mojo Widget-centric code for timeline
+  assistant.handleTimelineTap = function(e) {
+		Mojo.Controller.stageController.pushScene('message-detail', {'status_id':e.item.id, 'isdm':false, 'status_obj':e.item});
+	};
 };
 
 

@@ -274,7 +274,7 @@ MyTimelineAssistant.prototype.initTimeline = function() {
       // remove invalid data, massage into format that works for view interpolation, sort
       sc.app.Tweets.bucket.all(function(tweets) {
         thisA.timelineModel.items = tweets.select(function(tweet) {
-          if(tweet.id)
+          if(tweet.id && tweet.user)
             return true;
           else
             return false;

@@ -297,6 +297,10 @@ scene_helpers.addCommonSceneMethods = function(assistant) {
 	assistant.renderTimeline = function(callback) {
 	  var thisA = this;
 	  
+    // //clear filter field if it's open
+    // if(!callback && this.filterField)
+    //   this.filterField.close();
+	  
     // load all tweets from main bucket
 	  sc.app.Tweets.bucket.all(function(tweets) {
       // load all tweets from dm_bucket
@@ -331,6 +335,19 @@ scene_helpers.addCommonSceneMethods = function(assistant) {
         thisA.scrollToTop();
       });
     });
+	};
+	
+	assistant.handleFilterField = function(event) {
+    if(event.filterString) {
+  	  this.renderTimeline(function() {
+  	    this.timelineModel.items = this.timelineModel.items.filter(function(tweet) {
+  	      return (tweet.user.screen_name.toLowerCase().include(event.filterString) || tweet.text.toLowerCase().include(event.filterString));
+  	    });
+        this.controller.get("timeline-filter").mojo.setCount(this.timelineModel.items.length);
+  	  });
+	  }
+  	else
+  	  this.renderTimeline();
 	};
 	
 	assistant.setTimelineTextSize = function(tl_id, size) {

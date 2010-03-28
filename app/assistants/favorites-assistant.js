@@ -74,6 +74,7 @@ FavoritesAssistant.prototype.activate = function(event) {
 	*/
 	this.bindTimelineEntryTaps('#favorites-timeline');
   this.controller.listen("favorites-timeline", Mojo.Event.listTap, this.handleTimelineTap);
+	this.controller.listen("favorites-filter", Mojo.Event.filter, this.handleFilterField);
 	/*
 		set up the public timeline
 	*/
@@ -158,6 +159,7 @@ FavoritesAssistant.prototype.deactivate = function(event) {
 	*/
 	this.unbindTimelineEntryTaps('#favorites-timeline');
   this.controller.stopListening("favorites-timeline", Mojo.Event.listTap, this.handleTimelineTap);
+	this.controller.stopListening("favorites-filter", Mojo.Event.filter, this.handleFilterField);
 	/*
 		unbind and stop refresher for public timeline
 	*/

@@ -55,7 +55,7 @@ MyTimelineAssistant.prototype.setup = function() {
 	sch.debug('SETUP');
 	this.timelineModel = {items: []};
   this.controller.setupWidget("my-timeline", {itemTemplate: "shared/tweet", hasNoWidgets: true, lookahead: 20, renderLimit: 20}, this.timelineModel);
-	
+  
 	var thisA = this;
 	
 	// this.tweetsModel = [];
@@ -121,8 +121,7 @@ MyTimelineAssistant.prototype.setup = function() {
 	this.controller.setupWidget("filter-menu", undefined, this.timelineFilterMenuModel);
 	
 	
-
-
+  this.controller.setupWidget("timeline-filter", {}, {});
 	
 	this.setupInlineSpinner('activity-spinner-my-timeline');
 	
@@ -158,6 +157,7 @@ MyTimelineAssistant.prototype.activate = function(params) {
 	*/
 	this.bindTimelineEntryTaps('#my-timeline');
 	this.controller.listen("my-timeline", Mojo.Event.listTap, this.handleTimelineTap);
+	this.controller.listen("timeline-filter", Mojo.Event.filter, this.handleFilterField.bind(this));
 
 	/*
 		start the mytimeline 
@@ -182,7 +182,7 @@ MyTimelineAssistant.prototype.deactivate = function(event) {
 	*/
 	this.unbindTimelineEntryTaps('#my-timeline');
 	this.controller.stopListening("my-timeline", Mojo.Event.listTap, this.handleTimelineTap);
-	
+	this.controller.stopListening("timeline-filter", Mojo.Event.filter, this.handleFilterField);
 	
 
 	

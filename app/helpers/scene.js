@@ -282,7 +282,6 @@ scene_helpers.addCommonSceneMethods = function(assistant) {
 		
 		this.filterState = command;	
 		this.controller.modelChanged(this.timelineModel);
-		this.scrollToTop();
 	};
 	
 	assistant.renderTimeline = function(skipFilter) {
@@ -298,6 +297,7 @@ scene_helpers.addCommonSceneMethods = function(assistant) {
         tweet.status = null;
         tweet.status = tweet.not_new ? "" : "new";
         tweet.status += tweet.SC_is_reply ? " reply" : "";
+        tweet.status += tweet.SC_is_dm ? " dm" : "";
         tweet.protected_icon = tweet.user["protected"] ? "protected-icon" : "";
         tweet.relative_time = sch.getRelativeTime(tweet.created_at);
         return tweet;

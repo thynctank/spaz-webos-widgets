@@ -272,51 +272,20 @@ MyTimelineAssistant.prototype.initTimeline = function() {
       // TODO: Timeline list widget
       // remove invalid data, massage into format that works for view interpolation, sort
       thisA.renderTimeline();
-			
-			/*
-				sort timeline
-			*/
-			var before = new Date();
-			
-			// don't sort if we don't have anything new!
-			if (no_dupes.length > 0) {
-				// get first of new times
-				var new_first_time = no_dupes[0].SC_created_at_unixtime;
-				// get last of new times
-				var new_last_time  = no_dupes[no_dupes.length-1].SC_created_at_unixtime;
-				// get first of OLD times
-				var old_first_time = parseInt($oldFirst.attr('data-timestamp'), 10);
-				
-				sch.debug('new_first_time:'+new_first_time);
-				sch.debug('new_last_time:'+new_last_time);
-				sch.debug('old_first_time:'+old_first_time);
-				
-				// sort if either first new or last new is OLDER than the first old
-				if (new_first_time < old_first_time || new_last_time < old_first_time) {
-					jQuery('#my-timeline div.timeline-entry').tsort({attr:'data-timestamp', place:'orig', order:'desc'});					
-				} else {
-					sch.debug('Didn\'t resort…');
-				}
-
-			}
-			var after = new Date();
-			var total = new Date();
-			total.setTime(after.getTime() - before.getTime());
-			sch.debug('Sorting took ' + total.getMilliseconds() + 'ms');
-			
-			sc.helpers.updateRelativeTimes('#my-timeline div.timeline-entry span.date', 'data-created_at');
-			
-			/*
-				re-apply filtering
-			*/
 			thisA.filterTimeline();
-			
+
 			/*
 				Get new counts
 			*/
-			var new_count         = jQuery('#my-timeline div.timeline-entry.new:visible').length;
-			var new_mention_count = jQuery('#my-timeline div.timeline-entry.new.reply:visible').length;
-			var new_dm_count      = jQuery('#my-timeline div.timeline-entry.new.dm:visible').length;
+			var new_count         = thisA.timelineModel.items.select(function(tweet) {
+			  return !tweet.not_new;
+			}).length;
+			var new_mention_count = thisA.timelineModel.items.select(function(tweet) {
+			  return (!tweet.not_new && tweet.SC_is_reply);
+			}).length;
+			var new_dm_count      = thisA.timelineModel.items.select(function(tweet) {
+			  return (!tweet.not_new && tweet.SC_is_dm);
+			}).length;
 			
 			/*
 				Scroll to the first new if there are new messages

@@ -11656,7 +11656,6 @@ SpazTwit.prototype._cleanupItemArray = function(arr, max, sortfunc) {
  * this executes within the jQuery.each scope, so this === the item 
  */
 SpazTwit.prototype._processItem = function(item, section_name) {
-	
 	item.SC_timeline_from = section_name;
 	if (this.username) {
 		item.SC_user_received_by = this.username;

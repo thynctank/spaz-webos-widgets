@@ -1278,7 +1278,7 @@ scene_helpers.addCommonSceneMethods = function(assistant) {
   // TODO Mojo Widget-centric code for timeline
   assistant.handleTimelineTap = function(e) {
     if(!e.holdFired)
-		  Mojo.Controller.stageController.pushScene('message-detail', {'status_id':e.item.id, 'isdm':false, 'status_obj':e.item});
+		  Mojo.Controller.stageController.pushScene('message-detail', {'status_id':e.item.id, 'isdm':e.item.SC_is_dm, 'status_obj':e.item});
 	};
 };
 

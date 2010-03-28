@@ -242,75 +242,94 @@ scene_helpers.addCommonSceneMethods = function(assistant) {
 			command = this.filterState || "filter-timeline-all";
 		}
 		
+		var thisA = this, callback = function(){};
+		
 		switch (command) {
 			case 'filter-timeline-all':
-			  this.renderTimeline(true);
 				break;
 			case 'filter-timeline-replies-dm':
-			  this.timelineModel.items = this.timelineModel.items.filter(function(tweet) {
-			    if(tweet.SC_is_reply || tweet.SC_is_dm)
-			      return true;
-		      else
-			      return false;
-			  });
+			  callback = function() {
+  			  this.timelineModel.items = this.timelineModel.items.filter(function(tweet) {
+  			    if(tweet.SC_is_reply || tweet.SC_is_dm)
+  			      return true;
+  		      else
+  			      return false;
+  			  });
+			  };
 				break;
 			case 'filter-timeline-replies':
-			  this.timelineModel.items = this.timelineModel.items.filter(function(tweet) {
-			    if(tweet.SC_is_reply)
-			      return true;
-		      else
-			      return false;
-			  });
+			  callback = function() {
+			    this.timelineModel.items = this.timelineModel.items.filter(function(tweet) {
+  			    if(tweet.SC_is_reply)
+  			      return true;
+  		      else
+  			      return false;
+  			  });
+			  };
 				break;
 			case 'filter-timeline-dms':
-			  this.timelineModel.items = this.timelineModel.items.filter(function(tweet) {
-			    if(tweet.SC_is_dm)
-			      return true;
-		      else
-			      return false;
-			  });
+			  callback = function() {
+			    this.timelineModel.items = this.timelineModel.items.filter(function(tweet) {
+  			    if(tweet.SC_is_dm)
+  			      return true;
+  		      else
+  			      return false;
+  			  });
+			  };
 				break;
 			case "favorites":
-			  this.timelineModel.items = this.timelineModel.items.filter(function(tweet) {
-			    if(tweet.favorited)
-			      return true;
-			    else
-			      return false;
-			  });
+			  callback = function() {
+			    this.timelineModel.items = this.timelineModel.items.filter(function(tweet) {
+  			    if(tweet.favorited)
+  			      return true;
+  			    else
+  			      return false;
+  			  });
+			  };
 			  break;
 		}
 		
 		this.filterState = command;	
-		this.controller.modelChanged(this.timelineModel);
+		
+		this.renderTimeline(callback);
 	};
 	
-	assistant.renderTimeline = function(skipFilter) {
+	assistant.renderTimeline = function(callback) {
 	  var thisA = this;
+	  
+    // load all tweets from main bucket
 	  sc.app.Tweets.bucket.all(function(tweets) {
-      thisA.timelineModel.items = tweets.select(function(tweet) {
-        if(tweet.id && tweet.user)
-          return true;
-        else
-          return false;
-      }).
-      map(function(tweet){
-        tweet.status = null;
-        tweet.status = tweet.not_new ? "" : "new";
-        tweet.status += tweet.SC_is_reply ? " reply" : "";
-        tweet.status += tweet.SC_is_dm ? " dm" : "";
-        tweet.protected_icon = tweet.user["protected"] ? "protected-icon" : "";
-        tweet.relative_time = sch.getRelativeTime(tweet.created_at);
-        return tweet;
-      }).
-      sort(function(a, b) {
-        return b.SC_created_at_unixtime - a.SC_created_at_unixtime;
-      });
-      if(skipFilter) {
+      // load all tweets from dm_bucket
+      sc.app.Tweets.dm_bucket.all(function(dm_tweets) {
+        tweets = tweets.concat(dm_tweets);
+        
+        thisA.timelineModel.items = tweets.select(function(tweet) {
+          if(tweet.id)
+            return true;
+          else
+            return false;
+        }).
+        map(function(tweet){
+          tweet.status = null;
+          tweet.status = tweet.not_new ? "" : "new";
+          tweet.status += tweet.SC_is_reply ? " reply" : "";
+          tweet.status += tweet.SC_is_dm ? " dm" : "";
+          if(!tweet.user && tweet.sender)
+            tweet.user = tweet.sender;
+          tweet.protected_icon = tweet.user["protected"] ? "protected-icon" : "";
+          tweet.relative_time = sch.getRelativeTime(tweet.created_at);
+          return tweet;
+        }).
+        sort(function(a, b) {
+          return b.SC_created_at_unixtime - a.SC_created_at_unixtime;
+        });
+
+        if(callback)
+          callback.call(thisA);
+
         thisA.controller.modelChanged(thisA.timelineModel);
         thisA.scrollToTop();
-      }
-      else
-        thisA.filterTimeline();
+      });
     });
 	};
 	

@@ -246,33 +246,14 @@ MyTimelineAssistant.prototype.initTimeline = function() {
 			thisA.getData();
 		},
 		'data_success': function(e, data) {
-			data = data.reverse();
-			var no_dupes = [];
-			
 			var previous_count = jQuery('#my-timeline div.timeline-entry').length;
 			
-			var $oldFirst = jQuery('#my-timeline div.timeline-entry:first');
-			
-			for (var i=0; i < data.length; i++) {
-				
-				/*
-					only add if it doesn't already exist
-				*/
-				if (jQuery('#my-timeline div.timeline-entry[data-status-id='+data[i].id+']').length<1) {
-					
-					sc.app.Tweets.save(data[i]);
-					data[i].text = Spaz.makeItemsClickable(data[i].text);
-					no_dupes.push(data[i]);
-				}
-				
+			for (var i=0, j = data.length; i < j; i++) {
+				sc.app.Tweets.save(data[i]);
+				data[i].text = Spaz.makeItemsClickable(data[i].text);
 			};
 			
-      // thisA.mytl.addItems(no_dupes);
-
-      // TODO: Timeline list widget
-      // remove invalid data, massage into format that works for view interpolation, sort
       thisA.renderTimeline();
-			thisA.filterTimeline();
 
 			/*
 				Get new counts
@@ -292,9 +273,7 @@ MyTimelineAssistant.prototype.initTimeline = function() {
 				and there were already some items in the timeline
 			*/
 			if (new_count > 0) {
-
 				// thisA.playAudioCue('newmsg');
-				
 				if (previous_count > 0) {
 					if (sc.app.prefs.get('timeline-scrollonupdate')) {
 						if (thisA.isTopmostScene()) {
@@ -335,21 +314,7 @@ MyTimelineAssistant.prototype.initTimeline = function() {
 			var err_msg = $L("There were errors retrieving your combined timeline");
 			thisA.displayErrorInfo(err_msg, error_array);
 		},
-		'renderer': function(obj) {
-			try {
-				if (obj.SC_is_dm) {
-					return sc.app.tpl.parseTemplate('dm', obj);
-				} else {
-					return sc.app.tpl.parseTemplate('tweet', obj);
-				}				
-			} catch(err) {
-				sch.error("There was an error rendering the object: "+sch.enJSON(obj));
-				sch.error("Error:"+sch.enJSON(err));
-				return '';
-			}
-			
-			
-		}
+		'renderer': function() {}
 	});
 	
 	/*
@@ -492,9 +457,6 @@ MyTimelineAssistant.prototype.refresh = function(e) {
 
 
 MyTimelineAssistant.prototype.renderTweets = function(tweets, render_callback, from_cache) {
-	
-	
-
 };
 
 
@@ -547,28 +509,6 @@ MyTimelineAssistant.prototype.addTweetToModel = function(twobj) {
 
 
 MyTimelineAssistant.prototype.removeExtraItems = function() {
-
-	sch.debug('Removing Extra Items ==================================================');
-
-	sch.debug("normal tweets: " + jQuery('#my-timeline div.timeline-entry:not(.reply):not(.dm)').length);
-	sch.debug("reply tweets: "  + jQuery('#my-timeline div.timeline-entry.reply').length);
-	sch.debug("dm tweets: "     + jQuery('#my-timeline div.timeline-entry.dm').length);
-
-	/*
-		from html timeline
-	*/
-	sch.debug('timeline-maxentries:'+sc.app.prefs.get('timeline-maxentries'));
-	sch.removeExtraElements('#my-timeline div.timeline-entry:not(.reply):not(.dm)', sc.app.prefs.get('timeline-maxentries'));
-	sch.removeExtraElements('#my-timeline div.timeline-entry.reply', sc.app.prefs.get('timeline-maxentries-reply'));
-	sch.removeExtraElements('#my-timeline div.timeline-entry.dm', sc.app.prefs.get('timeline-maxentries-dm'));
-
-	jQuery('#my-timeline>div:empty').remove(); // remove empty containers
-
-	sch.debug("normal tweets: " + jQuery('#my-timeline div.timeline-entry:not(.reply):not(.dm)').length);
-	sch.debug("reply tweets: "  + jQuery('#my-timeline div.timeline-entry.reply').length);
-	sch.debug("dm tweets: "     + jQuery('#my-timeline div.timeline-entry.dm').length);	
-	sch.debug("jQuery('.timeline').children().length:"+jQuery('.timeline').children().length);
-	sch.debug("jQuery('#my-timeline').get(0).outerHTML:\n"+jQuery('#my-timeline').get(0).outerHTML);
 };
 
 
@@ -577,32 +517,6 @@ MyTimelineAssistant.prototype.removeExtraItems = function() {
  *  
  */
 MyTimelineAssistant.prototype.filterTimeline = function(command) {
-	
-	if (!command) {
-		command = this._filterState;
-		return;
-	}
-	
-	
-	var states = [
-					'filter-timeline-all',
-					'filter-timeline-replies-dm',
-					'filter-timeline-replies',
-					'filter-timeline-dms'
-	];
-	
-	for (var i=0; i < states.length; i++) {
-		if (command === states[i]) {
-			jQuery('#my-timeline').addClass(states[i]);
-		} else {
-			jQuery('#my-timeline').removeClass(states[i]);
-		}
-	};
-	
-	sch.dump("Scrolling to top after applying filter");
-	this.scrollToTop();
-	
-	this._filterState = command;	
 };
 
 

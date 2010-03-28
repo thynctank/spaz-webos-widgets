@@ -8,3 +8,4 @@
 
 # Widget Reorg
   * Add filter (search user name and content) once this is working properly
+  * Ensure tweets being marked read or new appropriately

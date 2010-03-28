@@ -8,6 +8,10 @@ function FavoritesAssistant() {
 
 FavoritesAssistant.prototype.setup = function() {
 
+	this.timelineModel = {items: []};
+  this.controller.setupWidget("favorites-timeline", {itemTemplate: "shared/tweet", hasNoWidgets: true, lookahead: 20, renderLimit: 20}, this.timelineModel);
+  this.filterState = "favorites";
+
 	this.scroller = this.controller.getSceneScroller();
 	this.initAppMenu({ 'items':loggedin_appmenu_items });
 	this.initTwit('DOM');
@@ -69,7 +73,7 @@ FavoritesAssistant.prototype.activate = function(event) {
 		Prepare for timeline entry taps
 	*/
 	this.bindTimelineEntryTaps('#favorites-timeline');
-
+  this.controller.listen("favorites-timeline", Mojo.Event.listTap, this.handleTimelineTap);
 	/*
 		set up the public timeline
 	*/
@@ -107,7 +111,9 @@ FavoritesAssistant.prototype.activate = function(event) {
 				
 			};
 			
-			thisA.favtl.addItems(no_dupes);
+      // thisA.favtl.addItems(no_dupes);
+      thisA.renderTimeline();
+      
 			sc.helpers.markAllAsRead('#favorites-timeline div.timeline-entry'); // favs are never "new"
 			sc.helpers.updateRelativeTimes('#favorites-timeline div.timeline-entry span.date', 'data-created_at');
 			thisA.hideInlineSpinner('activity-spinner-favorites');
@@ -151,7 +157,7 @@ FavoritesAssistant.prototype.deactivate = function(event) {
 		stop listening for timeline entry taps
 	*/
 	this.unbindTimelineEntryTaps('#favorites-timeline');
-	
+  this.controller.stopListening("favorites-timeline", Mojo.Event.listTap, this.handleTimelineTap);
 	/*
 		unbind and stop refresher for public timeline
 	*/

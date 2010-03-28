@@ -7,15 +7,4 @@
 	* People Picker widget to integrate with contacts for posting(?)
 
 # Widget Reorg
-  * Replace existing programmatic template rendering (from templates.js), be sure to clean up all instances
-  * Start with timeline/List widget
-    * Add filter (search user name and content) once this is working properly
-    * Be sure to tweak lookahead to work nicely with quick flicks on the list widget
-  * Separation of data/logic/presentation
-  * Data is available immediately from widget model, rather than having to parse it from the DOM as it is currently
-  * Perform all logic (filtering/sorting/classifying entries as new/read/direct/retweet/etc) on the data prior to rendering view
-    * Invalid items, such as tweets without users, should be pruned at the model level, perhaps in Lawnchair
-    * If it will be reused, break this logic off into one of the helpers, view into shared
-  * View becomes a dumb shell, easy to maintain
-  * Using Mojo models allows us to update multiple widgets onscreen with one call to modelChanged()
-  * Make sure to apply all existing event listeners to the widgets
+  * Add filter (search user name and content) once this is working properly

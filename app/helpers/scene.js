@@ -239,33 +239,80 @@ scene_helpers.addCommonSceneMethods = function(assistant) {
 	assistant.filterTimeline = function(command) {
 		
 		if (!command) {
-			command = this.filterState;
+			command = this.filterState || "filter-timeline-all";
 		}
 		
 		switch (command) {
 			case 'filter-timeline-all':
-				jQuery('#my-timeline div.timeline-entry').show();
+			  this.renderTimeline(true);
 				break;
 			case 'filter-timeline-replies-dm':
-				jQuery('#my-timeline div.timeline-entry').hide();
-				jQuery('#my-timeline div.timeline-entry.reply, #my-timeline div.timeline-entry.dm').show();
+			  this.timelineModel.items = this.timelineModel.items.filter(function(tweet) {
+			    if(tweet.SC_is_reply || tweet.SC_is_dm)
+			      return true;
+		      else
+			      return false;
+			  });
 				break;
 			case 'filter-timeline-replies':
-				jQuery('#my-timeline div.timeline-entry').hide();
-				jQuery('#my-timeline div.timeline-entry.reply').show();
+			  this.timelineModel.items = this.timelineModel.items.filter(function(tweet) {
+			    if(tweet.SC_is_reply)
+			      return true;
+		      else
+			      return false;
+			  });
 				break;
 			case 'filter-timeline-dms':
-				jQuery('#my-timeline div.timeline-entry').hide();
-				jQuery('#my-timeline div.timeline-entry.dm').show();
+			  this.timelineModel.items = this.timelineModel.items.filter(function(tweet) {
+			    if(tweet.SC_is_dm)
+			      return true;
+		      else
+			      return false;
+			  });
 				break;
-			default:
-				jQuery('#my-timeline div.timeline-entry').show();
+			case "favorites":
+			  this.timelineModel.items = this.timelineModel.items.filter(function(tweet) {
+			    if(tweet.favorited)
+			      return true;
+			    else
+			      return false;
+			  });
+			  break;
 		}
 		
 		this.filterState = command;	
+		this.controller.modelChanged(this.timelineModel);
+		this.scrollToTop();
 	};
 	
-	
+	assistant.renderTimeline = function(skipFilter) {
+	  var thisA = this;
+	  sc.app.Tweets.bucket.all(function(tweets) {
+      thisA.timelineModel.items = tweets.select(function(tweet) {
+        if(tweet.id && tweet.user)
+          return true;
+        else
+          return false;
+      }).
+      map(function(tweet){
+        tweet.status = null;
+        tweet.status = tweet.not_new ? "" : "new";
+        tweet.status += tweet.SC_is_reply ? " reply" : "";
+        tweet.protected_icon = tweet.user["protected"] ? "protected-icon" : "";
+        tweet.relative_time = sch.getRelativeTime(tweet.created_at);
+        return tweet;
+      }).
+      sort(function(a, b) {
+        return b.SC_created_at_unixtime - a.SC_created_at_unixtime;
+      });
+      if(skipFilter) {
+        thisA.controller.modelChanged(thisA.timelineModel);
+        thisA.scrollToTop();
+      }
+      else
+        thisA.filterTimeline();
+    });
+	};
 	
 	assistant.setTimelineTextSize = function(tl_id, size) {
 		size = size.toLowerCase();

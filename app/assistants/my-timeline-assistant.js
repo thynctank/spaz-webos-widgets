@@ -53,6 +53,8 @@ function MyTimelineAssistant(argFromPusher) {
 MyTimelineAssistant.prototype.setup = function() {
 	
 	sch.debug('SETUP');
+	this.timelineModel = {items: []};
+  this.controller.setupWidget("my-timeline", {itemTemplate: "shared/tweet", hasNoWidgets: true, lookahead: 20, renderLimit: 20}, this.timelineModel);
 	
 	var thisA = this;
 	
@@ -179,6 +181,7 @@ MyTimelineAssistant.prototype.deactivate = function(event) {
 		stop listening for timeline entry taps
 	*/
 	this.unbindTimelineEntryTaps('#my-timeline');
+	this.controller.stopListening("my-timeline", Mojo.Event.listTap, this.handleTimelineTap);
 	
 	
 
@@ -220,10 +223,6 @@ MyTimelineAssistant.prototype.cleanup = function(event) {
 MyTimelineAssistant.prototype.initTimeline = function() {
 	
 	sch.debug('initializing Timeline in assistant');
-  // TODO: Timeline list widget
-	this.timelineModel = {items: []};
-  this.controller.setupWidget("my-timeline", {itemTemplate: "shared/tweet", hasNoWidgets: true, lookahead: 20, renderLimit: 20}, this.timelineModel);
-	
 	var thisA = this;
 	/*
 		set up the combined "my" timeline
@@ -272,26 +271,7 @@ MyTimelineAssistant.prototype.initTimeline = function() {
 
       // TODO: Timeline list widget
       // remove invalid data, massage into format that works for view interpolation, sort
-      sc.app.Tweets.bucket.all(function(tweets) {
-        thisA.timelineModel.items = tweets.select(function(tweet) {
-          if(tweet.id && tweet.user)
-            return true;
-          else
-            return false;
-        }).
-        map(function(tweet){
-          tweet.status = null;
-          tweet.status = tweet.not_new ? "" : "new";
-          tweet.status += tweet.SC_is_reply ? " reply" : "";
-          tweet.protected_icon = tweet.user["protected"] ? "protected-icon" : "";
-          tweet.relative_time = sch.getRelativeTime(tweet.created_at);
-          return tweet;
-        }).
-        sort(function(a, b) {
-          return b.SC_created_at_unixtime - a.SC_created_at_unixtime;
-        });
-        thisA.controller.modelChanged(thisA.timelineModel);
-      });
+      thisA.renderTimeline();
 			
 			/*
 				sort timeline

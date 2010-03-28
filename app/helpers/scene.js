@@ -255,6 +255,7 @@ scene_helpers.addCommonSceneMethods = function(assistant) {
   		      else
   			      return false;
   			  });
+  			  this.filteredItems = this.timelineModel.items.clone();
 			  };
 				break;
 			case 'filter-timeline-replies':
@@ -265,6 +266,7 @@ scene_helpers.addCommonSceneMethods = function(assistant) {
   		      else
   			      return false;
   			  });
+  			  this.filteredItems = this.timelineModel.items.clone();
 			  };
 				break;
 			case 'filter-timeline-dms':
@@ -275,6 +277,7 @@ scene_helpers.addCommonSceneMethods = function(assistant) {
   		      else
   			      return false;
   			  });
+  			  this.filteredItems = this.timelineModel.items.clone();
 			  };
 				break;
 			case "favorites":
@@ -285,6 +288,7 @@ scene_helpers.addCommonSceneMethods = function(assistant) {
   			    else
   			      return false;
   			  });
+  			  this.filteredItems = this.timelineModel.items.clone();
 			  };
 			  break;
 		}
@@ -340,14 +344,16 @@ scene_helpers.addCommonSceneMethods = function(assistant) {
 	assistant.handleFilterField = function(event) {
     if(event.filterString) {
   	  this.renderTimeline(function() {
-  	    this.timelineModel.items = this.timelineModel.items.filter(function(tweet) {
-  	      return (tweet.user.screen_name.toLowerCase().include(event.filterString) || tweet.text.toLowerCase().include(event.filterString));
+  	    if(!this.filteredItems)
+  	      this.filteredItems = this.timelineModel.items.clone();
+  	    this.timelineModel.items = this.filteredItems.filter(function(tweet) {
+  	      return (tweet.user.screen_name.toLowerCase().include(event.filterString.toLowerCase()) || tweet.text.toLowerCase().include(event.filterString.toLowerCase()));
   	    });
         this.controller.get("timeline-filter").mojo.setCount(this.timelineModel.items.length);
   	  });
 	  }
   	else
-  	  this.renderTimeline();
+  	  this.filterTimeline();
 	};
 	
 	assistant.setTimelineTextSize = function(tl_id, size) {

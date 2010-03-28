@@ -10,6 +10,7 @@ FavoritesAssistant.prototype.setup = function() {
 
 	this.timelineModel = {items: []};
   this.controller.setupWidget("favorites-timeline", {itemTemplate: "shared/tweet", hasNoWidgets: true, lookahead: 20, renderLimit: 20}, this.timelineModel);
+  this.controller.setupWidget("timeline-filter", {}, {});
   this.filterState = "favorites";
 
 	this.scroller = this.controller.getSceneScroller();
@@ -74,7 +75,7 @@ FavoritesAssistant.prototype.activate = function(event) {
 	*/
 	this.bindTimelineEntryTaps('#favorites-timeline');
   this.controller.listen("favorites-timeline", Mojo.Event.listTap, this.handleTimelineTap);
-	this.controller.listen("favorites-filter", Mojo.Event.filter, this.handleFilterField);
+	this.controller.listen("timeline-filter", Mojo.Event.filter, this.handleFilterField.bind(this));
 	/*
 		set up the public timeline
 	*/
@@ -95,25 +96,12 @@ FavoritesAssistant.prototype.activate = function(event) {
 			thisA.twit.getFavorites();
 		},
 		'data_success': function(e, data) {
-			var data = data.reverse();
-			var no_dupes = [];
-			
-			for (var i=0; i < data.length; i++) {
-				
-				/*
-					only add if it doesn't already exist
-				*/
-				if (jQuery('#favorites-timeline div.timeline-entry[data-status-id='+data[i].id+']').length<1) {
-					
-					sc.app.Tweets.save(data[i]);
-					data[i].text = Spaz.makeItemsClickable(data[i].text);
-					no_dupes.push(data[i]);
-				}
-				
+			for (var i=0, j = data.length; i < j; i++) {
+				sc.app.Tweets.save(data[i]);
+				data[i].text = Spaz.makeItemsClickable(data[i].text);
 			};
 			
-      // thisA.favtl.addItems(no_dupes);
-      thisA.renderTimeline();
+      thisA.filterTimeline();
       
 			sc.helpers.markAllAsRead('#favorites-timeline div.timeline-entry'); // favs are never "new"
 			sc.helpers.updateRelativeTimes('#favorites-timeline div.timeline-entry span.date', 'data-created_at');
@@ -133,10 +121,7 @@ FavoritesAssistant.prototype.activate = function(event) {
 			sch.updateRelativeTimes('#favorites-timeline>div.timeline-entry .meta>.date', 'data-created_at');
 			thisA.hideInlineSpinner('activity-spinner-favorites');
 		},
-		'renderer': function(obj) {
-			return sc.app.tpl.parseTemplate('tweet', obj);
-			
-		}
+		'renderer': function() {}
 	});
 	
 	/*
@@ -159,7 +144,7 @@ FavoritesAssistant.prototype.deactivate = function(event) {
 	*/
 	this.unbindTimelineEntryTaps('#favorites-timeline');
   this.controller.stopListening("favorites-timeline", Mojo.Event.listTap, this.handleTimelineTap);
-	this.controller.stopListening("favorites-filter", Mojo.Event.filter, this.handleFilterField);
+	this.controller.stopListening("timeline-filter", Mojo.Event.filter, this.handleFilterField);
 	/*
 		unbind and stop refresher for public timeline
 	*/

@@ -237,73 +237,43 @@ scene_helpers.addCommonSceneMethods = function(assistant) {
 	 *  
 	 */
 	assistant.filterTimeline = function(command) {
-		
 		if (!command) {
 			command = this.filterState || "filter-timeline-all";
 		}
+		this.filterState = command;
 		
-		var thisA = this, callback = function(){};
+		var thisA = this;
+		var trueFunction;
 		
 		switch (command) {
 			case 'filter-timeline-all':
+			  testFunction = function(tweet) {return true;};
 				break;
 			case 'filter-timeline-replies-dm':
-			  callback = function() {
-  			  this.timelineModel.items = this.timelineModel.items.filter(function(tweet) {
-  			    if(tweet.SC_is_reply || tweet.SC_is_dm)
-  			      return true;
-  		      else
-  			      return false;
-  			  });
-  			  this.filteredItems = this.timelineModel.items.clone();
-			  };
+		    testFunction = function(tweet) {return (tweet.SC_is_reply || tweet.SC_is_dm);};
 				break;
 			case 'filter-timeline-replies':
-			  callback = function() {
-			    this.timelineModel.items = this.timelineModel.items.filter(function(tweet) {
-  			    if(tweet.SC_is_reply)
-  			      return true;
-  		      else
-  			      return false;
-  			  });
-  			  this.filteredItems = this.timelineModel.items.clone();
-			  };
+			  testFunction = function(tweet) {return tweet.SC_is_reply;};
 				break;
 			case 'filter-timeline-dms':
-			  callback = function() {
-			    this.timelineModel.items = this.timelineModel.items.filter(function(tweet) {
-  			    if(tweet.SC_is_dm)
-  			      return true;
-  		      else
-  			      return false;
-  			  });
-  			  this.filteredItems = this.timelineModel.items.clone();
-			  };
+			  testFunction = function(tweet) {return tweet.SC_is_dm;};
 				break;
 			case "favorites":
-			  callback = function() {
-			    this.timelineModel.items = this.timelineModel.items.filter(function(tweet) {
-  			    if(tweet.favorited)
-  			      return true;
-  			    else
-  			      return false;
-  			  });
-  			  this.filteredItems = this.timelineModel.items.clone();
-			  };
+			  testFunction = function(tweet) {return tweet.favorited;};
 			  break;
 		}
 		
-		this.filterState = command;	
-		
-		this.renderTimeline(callback);
+		this.renderTimeline(function() {
+		  this.timelineModel.items = this.timelineModel.items.filter(testFunction);
+		  this.prefilteredItems = this.timelineModel.items.clone();
+		});
 	};
 	
 	assistant.renderTimeline = function(callback) {
 	  var thisA = this;
 	  
-    // //clear filter field if it's open
-    // if(!callback && this.filterField)
-    //   this.filterField.close();
+    // TODO: Branch depending on scene, use different buckets (main/dm, favorites, search)
+    // TODO: Either clear buckets or add another set of buckets for every individual account
 	  
     // load all tweets from main bucket
 	  sc.app.Tweets.bucket.all(function(tweets) {
@@ -319,7 +289,7 @@ scene_helpers.addCommonSceneMethods = function(assistant) {
         }).
         map(function(tweet){
           tweet.status = null;
-          tweet.status = tweet.not_new ? "" : "new";
+          tweet.status = (new Date(tweet.created_at) > new Date(thisA.last_created_at)) ? "new" : "";
           tweet.status += tweet.SC_is_reply ? " reply" : "";
           tweet.status += tweet.SC_is_dm ? " dm" : "";
           if(!tweet.user && tweet.sender)
@@ -331,6 +301,9 @@ scene_helpers.addCommonSceneMethods = function(assistant) {
         sort(function(a, b) {
           return b.SC_created_at_unixtime - a.SC_created_at_unixtime;
         });
+        
+        
+        thisA.prefilteredItems = thisA.timelineModel.items.clone();
 
         if(callback)
           callback.call(thisA);
@@ -343,13 +316,12 @@ scene_helpers.addCommonSceneMethods = function(assistant) {
 	
 	assistant.handleFilterField = function(event) {
     if(event.filterString) {
+      var latestPrefilterItems = this.prefilteredItems.clone();
   	  this.renderTimeline(function() {
-  	    if(!this.filteredItems)
-  	      this.filteredItems = this.timelineModel.items.clone();
-  	    this.timelineModel.items = this.filteredItems.filter(function(tweet) {
+  	    this.timelineModel.items = latestPrefilterItems.filter(function(tweet) {
   	      return (tweet.user.screen_name.toLowerCase().include(event.filterString.toLowerCase()) || tweet.text.toLowerCase().include(event.filterString.toLowerCase()));
   	    });
-        this.controller.get("timeline-filter").mojo.setCount(this.timelineModel.items.length);
+        this.filterField.mojo.setCount(this.timelineModel.items.length);
   	  });
 	  }
   	else
@@ -396,7 +368,7 @@ scene_helpers.addCommonSceneMethods = function(assistant) {
 		// var username = sc.app.prefs.get('username');
 		// var password = sc.app.prefs.get('password');
 		
-		var event_mode = event_mode || 'jquery'; // default this to jquery because we have so much using it
+		event_mode = event_mode || 'jquery'; // default this to jquery because we have so much using it
 		
 		var users = new Users(sc.app.prefs);
 		
@@ -478,7 +450,7 @@ scene_helpers.addCommonSceneMethods = function(assistant) {
 		var text = entryobj.SC_text_raw;
 		var screenname = entryobj.user.screen_name;
 
-		var text = 'RT @' + screenname + ': '+text+'';
+		text = 'RT @' + screenname + ': '+text+'';
 		
 		this.showPostPanel({
 			'text'         : text,
@@ -495,7 +467,7 @@ scene_helpers.addCommonSceneMethods = function(assistant) {
 		var text = entryobj.SC_text_raw;
 		var screenname = entryobj.user.screen_name;
 
-		var text = text+' /via @' + screenname;
+		text = text+' /via @' + screenname;
 		
 		this.showPostPanel({
 			'text'         : text,
@@ -587,7 +559,7 @@ scene_helpers.addCommonSceneMethods = function(assistant) {
 			'type'         : 'photo',
 			'select_start' : url.length+1,
 			'select_length': text.length
-		});		
+		});
 	};
 
 
@@ -718,7 +690,7 @@ scene_helpers.addCommonSceneMethods = function(assistant) {
 
 	assistant.showBanner = function(text, category) {
 		
-		var category = category || 'misc';
+		category = category || 'misc';
 		
 		var launchArgs = {
 			'fromstage':this.getStageName()
@@ -912,7 +884,7 @@ scene_helpers.addCommonSceneMethods = function(assistant) {
 
 	assistant.processAjaxError = function(errobj) {		
 
-		var human_msg, twiterr_req, twiterr_msg;
+		var human_msg, twiterr_req, twiterr_msg, error_processed;
 		
 		switch(errobj.msg) {
 			case 'timeout':
@@ -970,7 +942,7 @@ scene_helpers.addCommonSceneMethods = function(assistant) {
 		}
 		
 		if (errobj.xhr && errobj.xhr.readyState > 3) {
-			var error_processed = {
+			error_processed = {
 				'status':		errobj.xhr.status,
 				'statusText':	errobj.xhr.statusText,
 				'responseText':	errobj.xhr.responseText,
@@ -981,7 +953,7 @@ scene_helpers.addCommonSceneMethods = function(assistant) {
 				'twitter_msg':	twiterr_msg
 			};
 		} else {
-			var error_processed = {
+			error_processed = {
 				'status':		'n/a',
 				'statusText':	'n/a',
 				'responseText':	'n/a',
@@ -1193,12 +1165,12 @@ scene_helpers.addCommonSceneMethods = function(assistant) {
 			{label:$L('Okay'), value:"okay", type:'dismiss'}
 		];
 		
-		var title    = title   || 'Alert';
-		var msg      = msg     || '';
+		title    = title   || 'Alert';
+		msg      = msg     || '';
 		var onChoose = ok_cb   || function(choice) {
 			return true;
 		};
-		var choices  = choices || default_choices;
+		choices  = choices || default_choices;
 		
 		this.controller.showAlertDialog({
 			'onChoose':onChoose,
@@ -1211,10 +1183,11 @@ scene_helpers.addCommonSceneMethods = function(assistant) {
 	
 	
 	assistant.getStageName = function() {
+	  var stagename;
 		if (window.name) {
-			var stagename = window.name;
+			stagename = window.name;
 		} else {
-			var stagename = SPAZ_MAIN_STAGENAME;
+			stagename = SPAZ_MAIN_STAGENAME;
 		}
 		return stagename;
 	};

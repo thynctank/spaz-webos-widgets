@@ -121,7 +121,7 @@ MyTimelineAssistant.prototype.setup = function() {
 	this.controller.setupWidget("filter-menu", undefined, this.timelineFilterMenuModel);
 	
 	
-  this.controller.setupWidget("timeline-filter", {}, {});
+  this.controller.setupWidget("timeline-filter", {delay: 500}, {});
 	
 	this.setupInlineSpinner('activity-spinner-my-timeline');
 	
@@ -158,7 +158,7 @@ MyTimelineAssistant.prototype.activate = function(params) {
 	this.bindTimelineEntryTaps('#my-timeline');
 	this.controller.listen("my-timeline", Mojo.Event.listTap, this.handleTimelineTap);
 	this.controller.listen("timeline-filter", Mojo.Event.filter, this.handleFilterField.bind(this));
-
+  this.filterField = this.controller.get("timeline-filter");
 	/*
 		start the mytimeline 
 	*/
@@ -243,28 +243,35 @@ MyTimelineAssistant.prototype.initTimeline = function() {
 				// sc.helpers.markAllAsRead('#my-timeline div.timeline-entry.new');
 				jQuery('#my-timeline div.timeline-entry.new').removeClass('new');
 			}
+			
+			  
 			thisA.getData();
 		},
 		'data_success': function(e, data) {
 			var previous_count = jQuery('#my-timeline div.timeline-entry').length;
+		  // set last since_id for setting new class on entries
+			if(thisA.timelineModel.items.length > 0)
+        thisA.last_created_at = thisA.timelineModel.items[0].created_at;
+      else
+        thisA.last_created_at = new Date().toUTCString();
+        
 			
 			for (var i=0, j = data.length; i < j; i++) {
 				sc.app.Tweets.save(data[i]);
-				data[i].text = Spaz.makeItemsClickable(data[i].text);
 			};
 			
-      thisA.renderTimeline();
+      thisA.filterTimeline();
 
 			/*
 				Get new counts
 			*/
-			var new_count         = thisA.timelineModel.items.select(function(tweet) {
+			var new_count         = data.select(function(tweet) {
 			  return !tweet.not_new;
 			}).length;
-			var new_mention_count = thisA.timelineModel.items.select(function(tweet) {
+			var new_mention_count = data.select(function(tweet) {
 			  return (!tweet.not_new && tweet.SC_is_reply);
 			}).length;
-			var new_dm_count      = thisA.timelineModel.items.select(function(tweet) {
+			var new_dm_count      = data.select(function(tweet) {
 			  return (!tweet.not_new && tweet.SC_is_dm);
 			}).length;
 			

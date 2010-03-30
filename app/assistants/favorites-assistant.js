@@ -98,8 +98,12 @@ FavoritesAssistant.prototype.activate = function(event) {
 		'data_success': function(e, data) {
 			for (var i=0, j = data.length; i < j; i++) {
 				sc.app.Tweets.save(data[i]);
-				data[i].text = Spaz.makeItemsClickable(data[i].text);
 			};
+
+			if(thisA.timelineModel.items.length > 0)
+        thisA.last_created_at = thisA.timelineModel.items[0].created_at;
+      else
+        thisA.last_created_at = new Date().toUTCString();
 			
       thisA.filterTimeline();
       

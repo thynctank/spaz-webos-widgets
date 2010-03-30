@@ -109,6 +109,7 @@ MyTimelineAssistant.prototype.setup = function() {
 	
 	
   this.controller.setupWidget("timeline-filter", {delay: 500}, {});
+  this.filterState = "filter-timeline-all";
 	
 	this.setupInlineSpinner('activity-spinner-my-timeline');
 	
@@ -362,7 +363,6 @@ MyTimelineAssistant.prototype.getData = function() {
 	}
 	
 	function getCombinedTimeline(statusobj) {
-		
 		dump(statusobj);
 		
 		if ( statusobj.isInternetConnectionAvailable === true) {
@@ -383,7 +383,6 @@ MyTimelineAssistant.prototype.getData = function() {
 };
 
 MyTimelineAssistant.prototype._getData = function() {
-	
 	this.showInlineSpinner('activity-spinner-my-timeline', 'Loading tweets…', true);
 
 	/*

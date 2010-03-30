@@ -10,7 +10,7 @@ FavoritesAssistant.prototype.setup = function() {
 
 	this.timelineModel = {items: []};
   this.controller.setupWidget("favorites-timeline", {itemTemplate: "shared/tweet", hasNoWidgets: true, lookahead: 20, renderLimit: 20}, this.timelineModel);
-  this.controller.setupWidget("timeline-filter", {}, {});
+  this.controller.setupWidget("timeline-filter", {delay: 500}, {});
   this.filterState = "favorites";
 
 	this.scroller = this.controller.getSceneScroller();
@@ -101,9 +101,9 @@ FavoritesAssistant.prototype.activate = function(event) {
 			};
 
 			if(thisA.timelineModel.items.length > 0)
-        thisA.last_created_at = thisA.timelineModel.items[0].created_at;
+        thisA.last_id = thisA.timelineModel.items[0].id;
       else
-        thisA.last_created_at = new Date().toUTCString();
+        thisA.last_id = 0;
 			
       thisA.filterTimeline();
       

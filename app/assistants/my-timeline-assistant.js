@@ -225,7 +225,7 @@ MyTimelineAssistant.prototype.initTimeline = function() {
 			thisA.getData();
 		},
 		'data_success': function(e, data) {
-			var previous_count = jQuery('#my-timeline div.timeline-entry').length;
+			var previous_count = thisA.timelineModel.items.length;
 		  // set last since_id for setting new class on entries
 			if(thisA.timelineModel.items.length > 0)
         thisA.last_id = thisA.timelineModel.items[0].id;

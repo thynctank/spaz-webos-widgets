@@ -257,6 +257,7 @@ MyTimelineAssistant.prototype.initTimeline = function() {
         
 			
 			for (var i=0, j = data.length; i < j; i++) {
+			  data[i].text = Spaz.makeItemsClickable(data[i].text);
 				sc.app.Tweets.save(data[i]);
 			};
 			

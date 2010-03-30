@@ -289,7 +289,7 @@ scene_helpers.addCommonSceneMethods = function(assistant) {
         }).
         map(function(tweet){
           tweet.status = null;
-          tweet.status = (new Date(tweet.created_at) > new Date(thisA.last_created_at)) ? "new" : "";
+          tweet.status = (tweet.id > thisA.last_id) ? "new" : "";
           tweet.status += tweet.SC_is_reply ? " reply" : "";
           tweet.status += tweet.SC_is_dm ? " dm" : "";
           if(!tweet.user && tweet.sender)
@@ -1020,8 +1020,7 @@ scene_helpers.addCommonSceneMethods = function(assistant) {
 	};
 
 	
-	assistant.clearTimelineCache = function(callback) {
-		this.cacheDepot = TempCache.clear();
+	assistant.clearTimeline = function(callback) {
 		sc.app.Tweets.reset();
 	};
 	

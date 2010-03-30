@@ -17,17 +17,13 @@ function MyTimelineAssistant(argFromPusher) {
 	
 	if (argFromPusher && argFromPusher.firstload === true) {
 		// console.debug();
-		// this.clearTimelineCache();
+		// this.clearTimeline();
 	}
 	
 	
 
 
 	this.cacheVersion = 3;  // we increment this when we change how the cache works
-	
-	
-	this.cacheDepot = makeCacheDepot(false);
-	
 	
 	/**
 	 * empties the timeline and resets the lastids in the twit object
@@ -37,15 +33,6 @@ function MyTimelineAssistant(argFromPusher) {
 	 * we define this here to get the closure thisA; haven't sorted out how to
 	 * bind an event using SpazCore to a scope without making it un-removable
 	 */
-	this.resetTwitState = function() {
-		jQuery('.timeline').empty();
-		thisA.twit.setLastId(SPAZCORE_SECTION_HOME, 0);
-		thisA.twit.setLastId(SPAZCORE_SECTION_REPLIES, 0);
-		thisA.twit.setLastId(SPAZCORE_SECTION_DMS,     0);
-
-	};
-	
-
 }
 
 
@@ -129,8 +116,6 @@ MyTimelineAssistant.prototype.setup = function() {
 	this.refreshOnActivate = true;
 	
 	
-	sch.listen(document, 'temp_cache_cleared', this.resetTwitState);
-	
 	this.loadTimelineCache();
 	
 	
@@ -166,7 +151,7 @@ MyTimelineAssistant.prototype.activate = function(params) {
 		this.mytl.start();
 		this.refreshOnActivate = false;
 	}
-
+  this.filterTimeline();
 };
 
 
@@ -186,13 +171,6 @@ MyTimelineAssistant.prototype.deactivate = function(event) {
 	
 
 	
-	
-	/*
-		save timeline cache
-	*/
-	sch.debug('saving timeline cache…');
-	this.saveTimelineCache();
-	
 };
 
 
@@ -209,8 +187,6 @@ MyTimelineAssistant.prototype.cleanup = function(event) {
 	this.cleanupTimeline();
 
 	this.stopTrackingStageActiveState();
-	
-	sch.unlisten(document, 'temp_cache_cleared', this.resetTwitState);
 	
 	
 	// this.stopRefresher();
@@ -251,9 +227,9 @@ MyTimelineAssistant.prototype.initTimeline = function() {
 			var previous_count = jQuery('#my-timeline div.timeline-entry').length;
 		  // set last since_id for setting new class on entries
 			if(thisA.timelineModel.items.length > 0)
-        thisA.last_created_at = thisA.timelineModel.items[0].created_at;
+        thisA.last_id = thisA.timelineModel.items[0].id;
       else
-        thisA.last_created_at = new Date().toUTCString();
+        thisA.last_id = 0;
         
 			
 			for (var i=0, j = data.length; i < j; i++) {
@@ -312,8 +288,6 @@ MyTimelineAssistant.prototype.initTimeline = function() {
 			}
 			
 			thisA.hideInlineSpinner('activity-spinner-my-timeline');
-			
-			thisA.saveTimelineCache();
 		},
 		'data_failure': function(e, error_array) {
 			dump('error_combined_timeline_data - response:');
@@ -352,37 +326,7 @@ MyTimelineAssistant.prototype.cleanupTimeline = function() {
 
 
 MyTimelineAssistant.prototype.loadTimelineCache = function() {
-	
-	var thisA = this;
-
-	this._loadTimelineCache = function() {
-		var data = TempCache.load('mytimelinecache');
-
-		if (data !== null) {
-			thisA.twit.setLastId(SPAZCORE_SECTION_HOME, data[SPAZCORE_SECTION_HOME + '_lastid']);
-			thisA.twit.setLastId(SPAZCORE_SECTION_REPLIES, data[SPAZCORE_SECTION_REPLIES + '_lastid']);
-			thisA.twit.setLastId(SPAZCORE_SECTION_DMS,     data[SPAZCORE_SECTION_DMS     + '_lastid']);
-
-			document.getElementById('my-timeline').innerHTML = data.tweets_html;
-			sch.markAllAsRead('#my-timeline div.timeline-entry');
-		}
-		sch.unlisten(document, 'temp_cache_load_db_success', this._loadTimelineCache);
-		
-	};
-
-	
-	
-	
-	
-	if (!TempCache.exists()) {
-		sch.dump('CACHE DOES NOT EXIST');
-		sch.listen(document, 'temp_cache_load_db_success', this._loadTimelineCache);
-		TempCache.loadFromDB();
-	} else {
-		this._loadTimelineCache();
-	}
-	
-	
+	this.filterTimeline();
 };
 
 MyTimelineAssistant.prototype.saveTimelineCache = function() {
@@ -405,11 +349,6 @@ MyTimelineAssistant.prototype.saveTimelineCache = function() {
 	sch.debug(twitdata[SPAZCORE_SECTION_DMS     + '_lastid']);
 	
 		
-	TempCache.save('mytimelinecache', twitdata);
-	
-	TempCache.saveToDB();
-	
-	
 };
 
 
@@ -463,12 +402,6 @@ MyTimelineAssistant.prototype.refresh = function(e) {
 };
 
 
-
-MyTimelineAssistant.prototype.renderTweets = function(tweets, render_callback, from_cache) {
-};
-
-
-
 MyTimelineAssistant.prototype.startRefresher = function() {
 	dump('Starting refresher');
 	/*
@@ -495,36 +428,3 @@ MyTimelineAssistant.prototype.stopRefresher = function() {
 	*/
 	clearInterval(this.refresher);
 };
-
-
-/**
- * fires 'get_one_status_succeeded' on retrieval
- */
-MyTimelineAssistant.prototype.getTweetFromModel = function(id, isdm) {
-	
-
-};
-
-
-
-/*
-	add to tweetsModel
-*/
-MyTimelineAssistant.prototype.addTweetToModel = function(twobj) {
-	// var newlen = this.tweetsModel.push(twobj);
-	// dump('this.tweetsModel is now '+newlen+' items long');
-};
-
-
-MyTimelineAssistant.prototype.removeExtraItems = function() {
-};
-
-
-
-/**
- *  
- */
-MyTimelineAssistant.prototype.filterTimeline = function(command) {
-};
-
-

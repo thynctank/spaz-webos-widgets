@@ -244,7 +244,7 @@ PreferencesAssistant.prototype.setup = function() {
 		clear cache button
 	*/
 	Mojo.Event.listen(jQuery('#clear-cache-button')[0], Mojo.Event.tap, function(e) {
-		thisA.clearTimelineCache();
+		thisA.clearTimeline();
 	});
 
 
@@ -343,7 +343,7 @@ PreferencesAssistant.prototype.cleanup = function(event) {
 
 
 	Mojo.Event.stopListening(jQuery('#clear-cache-button')[0], Mojo.Event.tap, function(e) {
-		thisA.clearTimelineCache();
+		this.clearTimeline();
 	});
 	
 	/*

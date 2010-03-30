@@ -1,3 +1,5 @@
+// TODO: Bring over changes to Lawnchair (callbacks for nuke/remove)
+
 /**
  * WebkitSQLiteAdaptor
  * ===================

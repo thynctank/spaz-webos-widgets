@@ -228,6 +228,7 @@ MyTimelineAssistant.prototype.initTimeline = function() {
 				sc.app.Tweets.save(data[i]);
 			};
 			
+			Mojo.Log.error("About to render timeline");
       thisA.filterTimeline();
 
 			/*

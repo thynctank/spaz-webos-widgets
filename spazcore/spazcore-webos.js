@@ -10462,6 +10462,7 @@ SpazTwit.prototype.combinedTimelineFinished = function() {
 			return false;
 		}
 	}
+	Mojo.Log.error("Combined timeline finished");
 	return true;
 };
 
@@ -11350,6 +11351,7 @@ SpazTwit.prototype._getTimeline = function(opts) {
 	var xhr = jQuery.ajax({
 		'timeout' :opts.timeout,
         'complete':function(xhr, msg){
+            Mojo.Log.error(opts.url + " complete");
             sc.helpers.dump(opts.url + ' complete:'+msg);
 			if (msg === 'timeout') {
 				// jQuery().trigger(opts.failure_event_type, [{'url':opts.url, 'xhr':xhr, 'msg':msg}]);

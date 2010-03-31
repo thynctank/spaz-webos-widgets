@@ -243,7 +243,7 @@ scene_helpers.addCommonSceneMethods = function(assistant) {
 		this.filterState = command;
 		
 		var thisA = this;
-		var trueFunction;
+		var testFunction;
 		
 		switch (command) {
 			case 'filter-timeline-all':
@@ -288,8 +288,8 @@ scene_helpers.addCommonSceneMethods = function(assistant) {
             return false;
         }).
         map(function(tweet){
-          tweet.status = null;
-          tweet.status = (tweet.id > thisA.last_id) ? "new" : "";
+          tweet.status = "";
+          tweet.status = (tweet.SC_created_at_unixtime > thisA.last_created_at_unixtime) ? "new" : "";
           tweet.status += tweet.SC_is_reply ? " reply" : "";
           tweet.status += tweet.SC_is_dm ? " dm" : "";
           if(!tweet.user && tweet.sender)
@@ -1022,6 +1022,7 @@ scene_helpers.addCommonSceneMethods = function(assistant) {
 	
 	assistant.clearTimeline = function(callback) {
 		sc.app.Tweets.reset();
+		this.last_created_at_unixtime = -1;
 	};
 	
 	

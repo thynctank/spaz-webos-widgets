@@ -101,9 +101,9 @@ FavoritesAssistant.prototype.activate = function(event) {
 			};
 
 			if(thisA.timelineModel.items.length > 0)
-        thisA.last_id = thisA.timelineModel.items[0].id;
+        thisA.last_created_at_unixtime = thisA.timelineModel.items[0].SC_created_at_unixtime;
       else
-        thisA.last_id = 0;
+        thisA.last_created_at_unixtime = -1;
 			
       thisA.filterTimeline();
       

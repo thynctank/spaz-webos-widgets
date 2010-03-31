@@ -5,6 +5,7 @@
 
 
 function MyTimelineAssistant(argFromPusher) {
+	this.timelineModel = {items: []};
 	
 	/* this is the creator function for your scene assistant object. It will be passed all the 
 	   additional parameters (after the scene name) that were passed to pushScene. The reference
@@ -40,7 +41,6 @@ function MyTimelineAssistant(argFromPusher) {
 MyTimelineAssistant.prototype.setup = function() {
 	
 	sch.debug('SETUP');
-	this.timelineModel = {items: []};
   this.controller.setupWidget("my-timeline", {itemTemplate: "shared/tweet", hasNoWidgets: true, lookahead: 20, renderLimit: 20}, this.timelineModel);
   
 	var thisA = this;
@@ -109,15 +109,11 @@ MyTimelineAssistant.prototype.setup = function() {
 	
 	
   this.controller.setupWidget("timeline-filter", {delay: 500}, {});
-  this.filterState = "filter-timeline-all";
 	
 	this.setupInlineSpinner('activity-spinner-my-timeline');
 	
 	
 	this.refreshOnActivate = true;
-	
-	
-	this.loadTimelineCache();
 	
 	
 	this.initTimeline();
@@ -216,21 +212,15 @@ MyTimelineAssistant.prototype.initTimeline = function() {
 		'max_items':100, // this isn't actually used atm
 
 		'request_data': function() {
-			if (thisA.isTopmostScene()) {
-				// sc.helpers.markAllAsRead('#my-timeline div.timeline-entry.new');
-				jQuery('#my-timeline div.timeline-entry.new').removeClass('new');
-			}
-			
-			  
 			thisA.getData();
 		},
 		'data_success': function(e, data) {
 			var previous_count = thisA.timelineModel.items.length;
 		  // set last since_id for setting new class on entries
 			if(thisA.timelineModel.items.length > 0)
-        thisA.last_id = thisA.timelineModel.items[0].id;
+        thisA.last_created_at_unixtime = thisA.timelineModel.items[0].SC_created_at_unixtime;
       else
-        thisA.last_id = 0;
+        thisA.last_created_at_unixtime = -1;
         
 			
 			for (var i=0, j = data.length; i < j; i++) {
@@ -323,36 +313,6 @@ MyTimelineAssistant.prototype.cleanupTimeline = function() {
 	}
 	
 };
-
-
-
-MyTimelineAssistant.prototype.loadTimelineCache = function() {
-	this.filterTimeline();
-};
-
-MyTimelineAssistant.prototype.saveTimelineCache = function() {
-	
-	var tweetsModel_html = document.getElementById('my-timeline').innerHTML;
-	
-	sch.dump(tweetsModel_html);
-	
-	var twitdata = {};
-	twitdata['version']                            = this.cacheVersion || -1;
-	twitdata['tweets_html']                        = tweetsModel_html;
-	twitdata[SPAZCORE_SECTION_HOME + '_lastid'] = this.twit.getLastId(SPAZCORE_SECTION_HOME);
-	twitdata[SPAZCORE_SECTION_REPLIES + '_lastid'] = this.twit.getLastId(SPAZCORE_SECTION_REPLIES);
-	twitdata[SPAZCORE_SECTION_DMS     + '_lastid'] = this.twit.getLastId(SPAZCORE_SECTION_DMS);
-	
-	sch.debug(twitdata);
-	sch.debug('LASTIDS!');
-	sch.debug(twitdata[SPAZCORE_SECTION_HOME + '_lastid']);
-	sch.debug(twitdata[SPAZCORE_SECTION_REPLIES + '_lastid']);
-	sch.debug(twitdata[SPAZCORE_SECTION_DMS     + '_lastid']);
-	
-		
-};
-
-
 
 MyTimelineAssistant.prototype.getData = function() {
 	

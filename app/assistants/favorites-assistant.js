@@ -9,7 +9,12 @@ function FavoritesAssistant() {
 FavoritesAssistant.prototype.setup = function() {
 
 	this.timelineModel = {items: []};
-  this.controller.setupWidget("favorites-timeline", {itemTemplate: "shared/tweet", hasNoWidgets: true, lookahead: 20, renderLimit: 20}, this.timelineModel);
+  this.controller.setupWidget("favorites-timeline", {
+    itemTemplate: "shared/tweet", 
+    hasNoWidgets: true, 
+    lookahead: 20, 
+    renderLimit: 20,
+    formatters: this.formatters }, this.timelineModel);
   this.controller.setupWidget("timeline-filter", {delay: 500}, {});
   this.filterState = "favorites";
 

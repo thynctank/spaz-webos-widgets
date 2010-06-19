@@ -9,7 +9,30 @@ var scene_helpers = {};
  * @param {object} assistant a scene assistant
  */
 scene_helpers.addCommonSceneMethods = function(assistant) {
-	
+	assistant.formatters = {
+    created_at: sch.getRelativeTime,
+    retweeted_status: function(retweet, obj) {
+      if (obj.retweeted_status) {
+				obj.text = obj.retweeted_status.text;	
+				return "<span class='retweet'>" +
+						obj.retweeted_status.user.screen_name + "</span>";
+			}
+    },
+    user_status: function(variable, obj) {
+      var user = obj.user || obj.sender || null;
+			return user && user.protected ? "protected-icon" : "";
+		},
+		classes: function(variable, obj) {
+			var res ="";
+			if (!obj.not_new)
+        res +=" new";
+			if (obj.SC_is_reply)
+				res +=" reply";
+			if (obj.SC_is_dm)
+				res +=" dm";
+			return res;
+		}
+  };
 	
 	assistant.initAppMenu = function(opts) {
 
@@ -287,21 +310,9 @@ scene_helpers.addCommonSceneMethods = function(assistant) {
           else
             return false;
         }).
-        map(function(tweet){
-          tweet.status = "";
-          tweet.status = (tweet.SC_created_at_unixtime > thisA.last_created_at_unixtime) ? "new" : "";
-          tweet.status += tweet.SC_is_reply ? " reply" : "";
-          tweet.status += tweet.SC_is_dm ? " dm" : "";
-          if(!tweet.user && tweet.sender)
-            tweet.user = tweet.sender;
-          tweet.protected_icon = tweet.user["protected"] ? "protected-icon" : "";
-          tweet.relative_time = sch.getRelativeTime(tweet.created_at);
-          return tweet;
-        }).
         sort(function(a, b) {
           return b.SC_created_at_unixtime - a.SC_created_at_unixtime;
         });
-        
         
         thisA.prefilteredItems = thisA.timelineModel.items.clone();
 
@@ -309,6 +320,7 @@ scene_helpers.addCommonSceneMethods = function(assistant) {
           callback.call(thisA);
 
         thisA.controller.modelChanged(thisA.timelineModel);
+        
         thisA.scrollToTop();
       });
     });

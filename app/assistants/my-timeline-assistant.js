@@ -41,7 +41,12 @@ function MyTimelineAssistant(argFromPusher) {
 MyTimelineAssistant.prototype.setup = function() {
 	
 	sch.debug('SETUP');
-  this.controller.setupWidget("my-timeline", {itemTemplate: "shared/tweet", hasNoWidgets: true, lookahead: 20, renderLimit: 20}, this.timelineModel);
+  this.controller.setupWidget("my-timeline", {
+    itemTemplate: "shared/tweet", 
+    hasNoWidgets: true, 
+    lookahead: 20, 
+    renderLimit: 20,
+    formatters: this.formatters }, this.timelineModel);
   
 	var thisA = this;
 	
@@ -222,10 +227,15 @@ MyTimelineAssistant.prototype.initTimeline = function() {
       else
         thisA.last_created_at_unixtime = -1;
         
-			
+			var tweet;
 			for (var i=0, j = data.length; i < j; i++) {
-			  data[i].text = Spaz.makeItemsClickable(data[i].text);
-				sc.app.Tweets.save(data[i]);
+			  tweet = data[i];
+			  tweet.text = Spaz.makeItemsClickable(tweet.text);
+			  if(tweet.sender) {
+			    tweet.user = tweet.sender;
+			    tweet.sender = null;
+			  }
+				sc.app.Tweets.save(tweet);
 			};
 			
 			Mojo.Log.error("About to render timeline");
